@@ -19,3 +19,13 @@ export const useSelectedDayStore = create<SetSelectedDay>(set => ({
 	selectedDay: new Date().toLocaleDateString(),
 	setSelectedDay: day => set({ selectedDay: day }),
 }))
+
+interface SearchedWeather {
+	searchedData: Weather | undefined
+	setSearchedData: (data: Weather) => void
+}
+
+export const useSearchedDataStore = create<SearchedWeather>(set => ({
+	searchedData: undefined,
+	setSearchedData: data => set({ searchedData: data }),
+}))
