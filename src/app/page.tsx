@@ -42,8 +42,6 @@ export default function Home() {
 
 				<section className='mt-2'>
 					<div>{coordsData && <UserWeather coords={coordsData} />}</div>
-
-					<div></div>
 				</section>
 			</main>
 		)

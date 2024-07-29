@@ -1,25 +1,10 @@
 'use client'
 
-import React, { useState, useEffect, Fragment, useRef } from 'react'
+import React, { useState } from 'react'
 
 import { useRouter } from 'next/navigation'
 
-import {
-	Listbox,
-	ListboxButton,
-	ListboxOption,
-	ListboxOptions,
-	Transition,
-} from '@headlessui/react'
-
-import {
-	IoChevronDownOutline,
-	IoFlagOutline,
-	IoLocateOutline,
-	IoSearchOutline,
-} from 'react-icons/io5'
-
-import format from 'pretty-format'
+import { IoSearchOutline } from 'react-icons/io5'
 
 import ClipLoader from 'react-spinners/ClipLoader'
 
@@ -29,12 +14,10 @@ import { useQuery } from '@tanstack/react-query'
 
 import 'react-country-state-city/dist/react-country-state-city.css'
 
-import { useCityStore } from '@/store/search/use-city-store'
 import { useSearchedDataStore } from '@/store/weather/use-weather-store'
 
 import { MagnifyingGlassIcon } from '@heroicons/react/20/solid'
 
-import { City, Country } from 'country-state-city'
 import { fetchWeatherByNameAsync } from '@/api/openweathermap/use-weather'
 
 /**
@@ -52,57 +35,17 @@ interface SetCountryState {
 export const Search = () => {
 	const router = useRouter()
 
-	const [countries, setCountries] = useState<SetCountryState[]>([])
-	const [cities, setCities] = useState<any[]>()
 	const [inputValue, setInputValue] = useState('')
 
-	const selectedCity = useCityStore(state => state?.selectedCity)
-	const setSelectedCity = useCityStore(state => state?.setSelectedCity)
 	const setSearchedData = useSearchedDataStore(state => state?.setSearchedData)
 
-	const [selectedCountry, setSelectedCountry] = useState<
-		{ value: string; label: string } | undefined
-	>(undefined)
-
-	const {
-		data: searchDataRes,
-		isPending,
-		isFetching,
-		refetch,
-	} = useQuery({
+	const { isFetching, refetch } = useQuery({
 		queryKey: ['searched-city'],
 		queryFn: async () =>
 			await fetchWeatherByNameAsync({ city_name: inputValue }),
 		enabled: false,
 		staleTime: 300000,
 	})
-
-	useEffect(() => {
-		const allCountries = Country.getAllCountries()
-		setCountries(
-			allCountries.map(country => ({
-				value: country.isoCode,
-				label: country.name,
-			})),
-		)
-	}, [])
-
-	useEffect(() => {
-		if (selectedCountry) {
-			const allCities = City.getCitiesOfCountry(selectedCountry?.value)
-
-			setCities(
-				allCities?.map(city => ({
-					value: city.name,
-					label: city.name,
-					latitude: city.latitude,
-					longitude: city.longitude,
-				})),
-			)
-		} else {
-			setCities([])
-		}
-	}, [selectedCountry])
 
 	const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
 		setInputValue(event.target.value)
@@ -121,10 +64,16 @@ export const Search = () => {
 
 			await refetch()
 				.then(response => {
-					if (response.isSuccess) {
-						setSearchedData(response?.data)
+					if (response.data) {
+						const { data, isSuccess, isError } = response
+						if (response.data) {
+						}
 
-						router.push(`/searched/${inputValue}`)
+						if (isSuccess) {
+							setSearchedData(data)
+
+							router.push(`/searched/${inputValue}`)
+						}
 					}
 				})
 				.catch(error => {
@@ -136,7 +85,7 @@ export const Search = () => {
 	return (
 		<>
 			<Toaster />
-			<div className='flex flex-col gap-y-1 w-full'>
+			<div className='flex flex-col gap-y-1 w-full relative'>
 				<div className='flex flex-1 items-center gap-x-2 justify-center px-2 lg:ml-6 lg:justify-end'>
 					<div className='w-full max-w-xl '>
 						<label htmlFor='search' className='sr-only'>
@@ -188,142 +137,6 @@ export const Search = () => {
 							</button>
 						</div>
 					</div>
-
-					<div className='w-24'>
-						<Listbox
-							value={selectedCountry}
-							onChange={setSelectedCountry}
-						>
-							<div className='relative'>
-								<ListboxButton className='w-12 h-12 rounded-full bg-grayscale-light flex items-center justify-center'>
-									<IoFlagOutline className='text-grayscale-100-' />
-								</ListboxButton>
-								<Transition
-									as={Fragment}
-									leave='transition ease-in duration-100'
-									leaveFrom='opacity-100'
-									leaveTo='opacity-0'
-								>
-									<ListboxOptions className='absolute -left-96 z-10 w-96 py-1 mt-1 overflow-auto text-white bg-grayscale-light rounded-md shadow-lg max-h-60 ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm'>
-										{countries.map((country, idx) => (
-											<ListboxOption
-												key={idx}
-												className={({ focus }) =>
-													`${
-														focus
-															? 'text-white bg-primary-base'
-															: ''
-													} cursor-default select-none relative py-2 pl-10 pr-4`
-												}
-												value={country}
-											>
-												{({ selected }) => (
-													<>
-														<span
-															className={`${
-																selected
-																	? 'font-medium'
-																	: 'font-normal'
-															} block truncate`}
-														>
-															{country.label}
-														</span>
-														{selected ? (
-															<span
-																className={`${
-																	selected
-																		? 'text-white'
-																		: 'text-indigo-600'
-																} absolute inset-y-0 left-0 flex items-center pl-3`}
-															>
-																<IoChevronDownOutline
-																	className='w-5 h-5'
-																	aria-hidden='true'
-																/>
-															</span>
-														) : null}
-													</>
-												)}
-											</ListboxOption>
-										))}
-									</ListboxOptions>
-								</Transition>
-							</div>
-						</Listbox>
-					</div>
-
-					{selectedCountry && (
-						<Listbox
-							value={selectedCity}
-							onChange={value => {
-								setSelectedCity(value)
-								router.push(`/search/${value?.label}`)
-							}}
-						>
-							<div className='relative cursor-pointer'>
-								<ListboxButton className='w-12 h-12 rounded-full bg-grayscale-light flex items-center justify-center'>
-									<IoLocateOutline className='text-grayscale-100-' />
-								</ListboxButton>
-								<Transition
-									as={Fragment}
-									leave='transition ease-in duration-100'
-									leaveFrom='opacity-100'
-									leaveTo='opacity-0'
-								>
-									<ListboxOptions className='absolute -left-96 z-10 w-96 py-1 mt-1 overflow-auto text-white bg-grayscale-light rounded-md shadow-lg max-h-60 ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm'>
-										{cities?.map((city, idx) => (
-											<ListboxOption
-												key={idx}
-												className={({ focus }) =>
-													`${
-														focus
-															? 'text-white bg-primary-base'
-															: ''
-													} cursor-default select-none relative py-2 pl-10 pr-4`
-												}
-												value={city}
-											>
-												{({ selected }) => (
-													<>
-														<span
-															className={`${
-																selected
-																	? 'font-medium'
-																	: 'font-normal'
-															} block truncate`}
-														>
-															{city.label}
-														</span>
-														{selected ? (
-															<span
-																className={`${
-																	selected
-																		? 'text-white'
-																		: 'text-indigo-600'
-																} absolute inset-y-0 left-0 flex items-center pl-3`}
-															>
-																<IoChevronDownOutline
-																	className='w-5 h-5'
-																	aria-hidden='true'
-																/>
-															</span>
-														) : null}
-													</>
-												)}
-											</ListboxOption>
-										))}
-									</ListboxOptions>
-								</Transition>
-							</div>
-						</Listbox>
-					)}
-				</div>
-				<div className='px-1'>
-					{selectedCountry && (
-						<div className='p-3 w-fit rounded-xl bg-grayscale-light'>
-							<h5>{selectedCountry?.label}</h5>
-						</div>
-					)}
 				</div>
 			</div>
 		</>
