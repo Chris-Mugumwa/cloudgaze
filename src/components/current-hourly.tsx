@@ -69,9 +69,6 @@ export const CurrentHourly: React.FC<CurrentHourlyProps> = ({
 
 							return (
 								<motion.div
-									onClick={() => {
-										console.log('Cheese', details)
-									}}
 									key={uuid()}
 									className='flex flex-col bg-grayscale-light w-48 m-1 px-1 py-1 max-h-72 min-h-72 min-w-48 rounded-lg  justify-center'
 								>

@@ -67,9 +67,6 @@ export const FiveDayHourly: React.FC<FiveDayHourly> = ({ daily_hourly }) => {
 							return (
 								<div
 									key={uuid()}
-									onClick={() => {
-										console.log(forecast)
-									}}
 									className={cn(
 										' p-4 rounded-lg  m-1 cursor-pointer max-w-2xl lg:p-6',
 										selectedDay === dt_txt
