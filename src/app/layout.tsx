@@ -15,12 +15,17 @@ const russo_one = Russo_One({
 	variable: '--font-russo-one',
 })
 
-const chakra_petch = Russo_One({
+const chakra_petch = Chakra_Petch({
 	subsets: ['latin'],
 	display: 'auto',
 	weight: ['400'],
 	variable: '--font-chakra-petch',
 })
+
+export const metadata: Metadata = {
+	title: 'Cloudgaze',
+	description: 'Weather app for Bitcube',
+}
 
 export default async function RootLayout({
 	children,
